@@ -1,0 +1,48 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+
+/**
+ * Section – full-width structural block rendered as a `<table>`.
+ *
+ * Mirrors the react-email `<Section>` and wraps its children in a
+ * presentation table so spacing and alignment stay consistent across
+ * email clients.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Section } from '@backstro/email';
+ * ---
+ * <Section style={{ padding: '24px' }}>
+ *   <slot />
+ * </Section>
+ * ```
+ */
+interface Props {
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { style, ...rest } = Astro.props;
+const tableStyle = style ? styleToString(style) : undefined;
+---
+
+<table
+  align="center"
+  width="100%"
+  border={0}
+  cellpadding="0"
+  cellspacing="0"
+  role="presentation"
+  style={tableStyle}
+  {...rest}
+>
+  <tbody>
+    <tr>
+      <td>
+        <slot />
+      </td>
+    </tr>
+  </tbody>
+</table>

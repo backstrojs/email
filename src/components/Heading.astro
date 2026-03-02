@@ -1,0 +1,40 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+import { withMargin, type MarginShorthands } from '../utils/spaces.js';
+
+/**
+ * Heading – renders `h1`–`h6` with margin shorthand helpers.
+ *
+ * The `as` prop controls which heading element is rendered (defaults to
+ * `h1`). Use the `m`, `mx`, `my`, `mt`, `mr`, `mb`, `ml` props as
+ * convenient margin shorthands (numbers are treated as pixel values).
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Heading } from '@backstro/email';
+ * ---
+ * <Heading as="h2" mt={32} mb={16}>Welcome</Heading>
+ * ```
+ */
+interface Props extends MarginShorthands {
+  /** Which heading element to render. @default 'h1' */
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { as: tag = 'h1', m, mx, my, mt, mr, mb, ml, style, ...rest } = Astro.props;
+
+const marginStyles = withMargin({ m, mx, my, mt, mr, mb, ml });
+
+const headingStyle = styleToString({ ...marginStyles, ...style });
+---
+
+{tag === 'h1' && <h1 style={headingStyle} {...rest}><slot /></h1>}
+{tag === 'h2' && <h2 style={headingStyle} {...rest}><slot /></h2>}
+{tag === 'h3' && <h3 style={headingStyle} {...rest}><slot /></h3>}
+{tag === 'h4' && <h4 style={headingStyle} {...rest}><slot /></h4>}
+{tag === 'h5' && <h5 style={headingStyle} {...rest}><slot /></h5>}
+{tag === 'h6' && <h6 style={headingStyle} {...rest}><slot /></h6>}

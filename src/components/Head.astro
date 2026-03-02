@@ -1,0 +1,30 @@
+---
+/**
+ * Head – `<head>` element with required email meta tags injected automatically.
+ *
+ * Adds `Content-Type: text/html; charset=UTF-8` and the Apple-specific
+ * `x-apple-disable-message-reformatting` meta tag, then renders any children
+ * you supply (font declarations, preview text helpers, etc.).
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Head } from '@backstro/email';
+ * ---
+ * <Head>
+ *   <title>My Email</title>
+ * </Head>
+ * ```
+ */
+interface Props extends astroHTML.JSX.HTMLAttributes {
+  [key: string]: unknown;
+}
+
+const { ...rest } = Astro.props;
+---
+
+<head {...rest}>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="x-apple-disable-message-reformatting" />
+  <slot />
+</head>

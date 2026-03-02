@@ -1,0 +1,34 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+
+/**
+ * Hr – a full-width horizontal rule with a subtle border.
+ *
+ * Defaults to `width: 100%`, `border: none`, `borderTop: 1px solid #eaeaea`.
+ * All defaults are overridable via the `style` prop.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Hr } from '@backstro/email';
+ * ---
+ * <Hr style={{ borderColor: '#cccccc' }} />
+ * ```
+ */
+interface Props {
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { style, ...rest } = Astro.props;
+
+const hrStyle = styleToString({
+  width: '100%',
+  border: 'none',
+  borderTop: '1px solid #eaeaea',
+  ...style,
+});
+---
+
+<hr style={hrStyle} {...rest} />

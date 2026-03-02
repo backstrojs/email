@@ -1,0 +1,85 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+import { parsePadding } from '../utils/parse-padding.js';
+import { pxToPt } from '../utils/px-to-pt.js';
+
+/**
+ * Button – a link styled and structured to look like a button.
+ *
+ * Includes Microsoft Outlook (MSO) conditional comments that emulate
+ * left/right padding using invisible characters — the same technique
+ * used by react-email's `<Button>`.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Button } from '@backstro/email';
+ * ---
+ * <Button href="https://example.com" style={{ padding: '12px 20px', backgroundColor: '#007bff', color: '#fff' }}>
+ *   Click me
+ * </Button>
+ * ```
+ */
+interface Props {
+  href?: string;
+  target?: string;
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { href, target = '_blank', style, ...rest } = Astro.props;
+
+const { paddingTop, paddingRight, paddingBottom, paddingLeft } = parsePadding(style ?? {});
+
+const y = (paddingTop ?? 0) + (paddingBottom ?? 0);
+const textRaise = pxToPt(y);
+
+const maxFontWidth = 5;
+
+function computeFontWidthAndSpaceCount(expectedWidth: number): [number, number] {
+  if (expectedWidth === 0) return [0, 0];
+  let smallestSpaceCount = 0;
+  const computeRequired = () =>
+    smallestSpaceCount > 0 ? expectedWidth / smallestSpaceCount / 2 : Infinity;
+  while (computeRequired() > maxFontWidth) {
+    smallestSpaceCount++;
+  }
+  return [computeRequired(), smallestSpaceCount];
+}
+
+const [plFontWidth, plSpaceCount] = computeFontWidthAndSpaceCount(paddingLeft ?? 0);
+const [prFontWidth, prSpaceCount] = computeFontWidthAndSpaceCount(paddingRight ?? 0);
+
+const leftMsoHtml = `<!--[if mso]><i style="mso-font-width:${plFontWidth * 100}%;mso-text-raise:${textRaise}" hidden>${'&#8202;'.repeat(plSpaceCount)}</i><![endif]-->`;
+const rightMsoHtml = `<!--[if mso]><i style="mso-font-width:${prFontWidth * 100}%" hidden>${'&#8202;'.repeat(prSpaceCount)}&#8203;</i><![endif]-->`;
+
+const aStyle = styleToString({
+  lineHeight: '100%',
+  textDecoration: 'none',
+  display: 'inline-block',
+  maxWidth: '100%',
+  msoPaddingAlt: '0px',
+  ...style,
+  paddingTop: paddingTop != null ? `${paddingTop}px` : undefined,
+  paddingRight: paddingRight != null ? `${paddingRight}px` : undefined,
+  paddingBottom: paddingBottom != null ? `${paddingBottom}px` : undefined,
+  paddingLeft: paddingLeft != null ? `${paddingLeft}px` : undefined,
+});
+
+const innerSpanStyle = styleToString({
+  maxWidth: '100%',
+  display: 'inline-block',
+  lineHeight: '120%',
+  msoPaddingAlt: '0px',
+  msoTextRaise: pxToPt(paddingBottom),
+});
+---
+
+<a href={href} target={target} style={aStyle} {...rest}>
+  <span set:html={leftMsoHtml} />
+  <span style={innerSpanStyle}>
+    <slot />
+  </span>
+  <span set:html={rightMsoHtml} />
+</a>

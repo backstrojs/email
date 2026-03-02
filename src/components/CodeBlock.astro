@@ -1,0 +1,122 @@
+---
+import Prism from 'prismjs';
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+import type { Theme } from '../theme-types.js';
+
+// Extend Prism language support beyond the default bundle
+import 'prismjs/components/prism-typescript.js';
+import 'prismjs/components/prism-jsx.js';
+import 'prismjs/components/prism-tsx.js';
+import 'prismjs/components/prism-bash.js';
+import 'prismjs/components/prism-json.js';
+import 'prismjs/components/prism-css.js';
+import 'prismjs/components/prism-python.js';
+import 'prismjs/components/prism-rust.js';
+import 'prismjs/components/prism-go.js';
+
+/**
+ * CodeBlock – syntax-highlighted code block with inline styles.
+ *
+ * Uses PrismJS for tokenization and applies all colours as inline styles
+ * so the output is readable in email clients that strip `<style>` sheets.
+ *
+ * The `theme` prop accepts any plain-object theme that maps Prism token
+ * types to CSS-in-JS style objects. A `base` key provides the outer
+ * `<pre>` styles (background, font, padding, etc.).
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { CodeBlock, themes } from '@backstro/email';
+ * ---
+ * <CodeBlock
+ *   code={`const x = 1;`}
+ *   language="typescript"
+ *   theme={themes.dracula}
+ * />
+ * ```
+ */
+interface Props {
+  /** The source code to render. */
+  code: string;
+  /** PrismJS language identifier, e.g. `'typescript'`, `'bash'`. */
+  language: string;
+  /** Theme object mapping Prism token types to CSS-in-JS style objects. */
+  theme: Theme;
+  /** Whether to show line numbers. @default false */
+  lineNumbers?: boolean;
+  /** Font family override (useful when a global font has been set via `<Font>`). */
+  fontFamily?: string;
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { code, language, theme, lineNumbers = false, fontFamily, style, ...rest } = Astro.props;
+
+const grammar = Prism.languages[language];
+if (!grammar) {
+  throw new Error(`CodeBlock: No Prism grammar found for language "${language}".`);
+}
+
+function stylesForToken(token: Prism.Token): StyleObject {
+  let styles: StyleObject = { ...(theme[token.type] ?? {}) };
+  const aliases = Array.isArray(token.alias) ? token.alias : [token.alias];
+  for (const alias of aliases) {
+    if (alias && theme[alias]) {
+      styles = { ...styles, ...theme[alias] };
+    }
+  }
+  return styles;
+}
+
+function renderToken(
+  token: string | Prism.Token,
+  inheritedStyles?: StyleObject,
+): string {
+  if (token instanceof Prism.Token) {
+    const tokenStyles = { ...inheritedStyles, ...stylesForToken(token) };
+
+    if (token.content instanceof Prism.Token) {
+      return `<span style="${styleToString(tokenStyles)}">${renderToken(token.content)}</span>`;
+    }
+    if (typeof token.content === 'string') {
+      return `<span style="${styleToString(tokenStyles)}">${escapeHtml(token.content)}</span>`;
+    }
+    // Array of tokens
+    return (token.content as (string | Prism.Token)[])
+      .map((sub) => renderToken(sub, tokenStyles))
+      .join('');
+  }
+  // Plain string — preserve spaces using non-breaking characters
+  const safe = escapeHtml(token).replaceAll(' ', '\xA0\u200D\u200B');
+  return `<span${inheritedStyles ? ` style="${styleToString(inheritedStyles)}"` : ''}>${safe}</span>`;
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+const lines = code.split(/\r\n|\r|\n/);
+const tokensPerLine = lines.map((line) => Prism.tokenize(line, grammar));
+
+const innerHtml = tokensPerLine
+  .map((lineTokens, index) => {
+    const lineNum = lineNumbers
+      ? `<span style="${styleToString({ width: '2em', height: '1em', display: 'inline-block', fontFamily: fontFamily })}">${index + 1}</span>`
+      : '';
+    const lineContent = lineTokens
+      .map((t) => renderToken(t, fontFamily ? { fontFamily } : undefined))
+      .join('');
+    return `${lineNum}${lineContent}<br>`;
+  })
+  .join('');
+
+const preStyle = styleToString({ ...theme.base, width: '100%', ...style });
+---
+
+<pre style={preStyle} {...rest}><code set:html={innerHtml} /></pre>

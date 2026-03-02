@@ -1,0 +1,32 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+
+/**
+ * Column – a single column inside a `<Row>`, rendered as a `<td>`.
+ *
+ * Use the `style` prop to control width, padding, and alignment.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Row, Column } from '@backstro/email';
+ * ---
+ * <Row>
+ *   <Column style={{ width: '50%' }}>Left</Column>
+ *   <Column style={{ width: '50%' }}>Right</Column>
+ * </Row>
+ * ```
+ */
+interface Props {
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { style, ...rest } = Astro.props;
+const tdStyle = style ? styleToString(style) : undefined;
+---
+
+<td data-id="__react-email-column" style={tdStyle} {...rest}>
+  <slot />
+</td>

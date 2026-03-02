@@ -1,0 +1,31 @@
+---
+/**
+ * Html – root wrapper for an email template.
+ *
+ * Renders an `<html>` element with sensible email defaults (`lang="en"`,
+ * `dir="ltr"`) while forwarding any extra attributes.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Html } from '@backstro/email';
+ * ---
+ * <Html lang="en">
+ *   <slot />
+ * </Html>
+ * ```
+ */
+interface Props extends Omit<astroHTML.JSX.HTMLAttributes, 'lang' | 'dir'> {
+  /** BCP 47 language tag. Defaults to `"en"`. */
+  lang?: string;
+  /** Text directionality. Defaults to `"ltr"`. */
+  dir?: 'ltr' | 'rtl' | 'auto';
+  [key: string]: unknown;
+}
+
+const { lang = 'en', dir = 'ltr', ...rest } = Astro.props;
+---
+
+<html lang={lang} dir={dir} {...rest}>
+  <slot />
+</html>

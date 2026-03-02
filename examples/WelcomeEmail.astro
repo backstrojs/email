@@ -1,0 +1,147 @@
+---
+/**
+ * Example: WelcomeEmail.astro
+ *
+ * Demonstrates most @backstro/email components in a single template.
+ * In production, pass `name` and `confirmUrl` as Astro props.
+ *
+ * Render to HTML:
+ *   import { render } from '@backstro/email/render';
+ *   import WelcomeEmail from './WelcomeEmail.astro';
+ *   const html = await render(WelcomeEmail, { name: 'Alice', confirmUrl: '...' });
+ */
+import {
+  Html,
+  Head,
+  Body,
+  Container,
+  Section,
+  Row,
+  Column,
+  Heading,
+  Text,
+  Button,
+  Link,
+  Img,
+  Hr,
+  Preview,
+  Font,
+  CodeInline,
+} from '../src/index';
+
+interface Props {
+  name?: string;
+  confirmUrl?: string;
+}
+
+const { name = 'there', confirmUrl = 'https://example.com/confirm' } = Astro.props;
+---
+
+<Html lang="en">
+  <Head>
+    <title>Welcome to AstroMail</title>
+    <Font
+      fontFamily="Inter"
+      fallbackFontFamily={['Arial', 'Helvetica', 'sans-serif']}
+    />
+  </Head>
+  <Body style={{ backgroundColor: '#f0f4f8', fontFamily: 'Inter, Arial, sans-serif' }}>
+    <Preview>Welcome, {name}! Confirm your email to get started →</Preview>
+
+    <Container style={{ maxWidth: '600px', margin: '40px auto', backgroundColor: '#ffffff', borderRadius: '8px', overflow: 'hidden' }}>
+
+      {/* Header */}
+      <Section style={{ backgroundColor: '#0070f3', padding: '32px 40px' }}>
+        <Heading as="h1" style={{ color: '#ffffff', fontSize: '28px', margin: '0' }}>
+          AstroMail ✉️
+        </Heading>
+      </Section>
+
+      {/* Body */}
+      <Section style={{ padding: '40px' }}>
+        <Heading as="h2" mb={8} style={{ color: '#111827', fontSize: '22px' }}>
+          Hi {name}, welcome aboard!
+        </Heading>
+        <Text style={{ color: '#4b5563', lineHeight: '26px' }}>
+          Thanks for signing up. We just need to verify your email address before
+          you can start using your account. Click the button below to confirm.
+        </Text>
+
+        <Button
+          href={confirmUrl}
+          style={{
+            display: 'inline-block',
+            backgroundColor: '#0070f3',
+            color: '#ffffff',
+            padding: '12px 24px',
+            borderRadius: '6px',
+            fontWeight: '600',
+            fontSize: '15px',
+            textDecoration: 'none',
+            marginTop: '8px',
+          }}
+        >
+          Confirm email address
+        </Button>
+
+        <Text style={{ color: '#9ca3af', fontSize: '13px', marginTop: '24px' }}>
+          If the button doesn't work, copy and paste this URL into your browser:
+        </Text>
+        <Link href={confirmUrl} style={{ color: '#0070f3', wordBreak: 'break-all', fontSize: '13px' }}>
+          {confirmUrl}
+        </Link>
+
+        <Hr style={{ marginTop: '32px', marginBottom: '32px' }} />
+
+        {/* Two-column section */}
+        <Row>
+          <Column style={{ paddingRight: '12px' }}>
+            <Img
+              src="https://placehold.co/260x160/e0f2fe/0070f3?text=Feature+A"
+              alt="Feature A"
+              width={260}
+              height={160}
+              style={{ borderRadius: '4px' }}
+            />
+            <Text style={{ fontSize: '13px', color: '#374151', marginTop: '8px' }}>
+              <strong>Real-time sync</strong> — your data, everywhere, instantly.
+            </Text>
+          </Column>
+          <Column style={{ paddingLeft: '12px' }}>
+            <Img
+              src="https://placehold.co/260x160/fce7f3/be185d?text=Feature+B"
+              alt="Feature B"
+              width={260}
+              height={160}
+              style={{ borderRadius: '4px' }}
+            />
+            <Text style={{ fontSize: '13px', color: '#374151', marginTop: '8px' }}>
+              <strong>Smart notifications</strong> — only what matters to you.
+            </Text>
+          </Column>
+        </Row>
+
+        <Hr style={{ marginTop: '32px', marginBottom: '24px' }} />
+
+        <Text style={{ color: '#6b7280', fontSize: '13px' }}>
+          You can also use inline code in emails: run <CodeInline>npm start</CodeInline> to launch the dev server.
+        </Text>
+      </Section>
+
+      {/* Footer */}
+      <Section style={{ backgroundColor: '#f9fafb', padding: '24px 40px', borderTop: '1px solid #e5e7eb' }}>
+        <Text style={{ color: '#9ca3af', fontSize: '12px', margin: '0', textAlign: 'center' }}>
+          AstroMail Inc., 1 Infinite Loop, Cupertino, CA 95014
+          <br />
+          <Link href="https://example.com/unsubscribe" style={{ color: '#0070f3' }}>
+            Unsubscribe
+          </Link>
+          {' · '}
+          <Link href="https://example.com/privacy" style={{ color: '#0070f3' }}>
+            Privacy policy
+          </Link>
+        </Text>
+      </Section>
+    </Container>
+  </Body>
+</Html>

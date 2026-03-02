@@ -1,0 +1,58 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+
+/**
+ * CodeInline – an inline code snippet with cross-client compatibility.
+ *
+ * The Orange.fr email client removes `<code>` elements, so this component
+ * renders the content twice: once as a `<code>` element (suppressed on
+ * Orange.fr via CSS) and once as a `<span>` (shown only on Orange.fr).
+ * A tiny injected `<style>` tag handles the toggling logic, targeting
+ * the `<meta>` sibling selector that only applies in Orange.fr's
+ * sandboxed rendering environment.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { CodeInline } from '@backstro/email';
+ * ---
+ * <p>
+ *   Run <CodeInline>npm install</CodeInline> to get started.
+ * </p>
+ * ```
+ */
+interface Props {
+  style?: StyleObject;
+  class?: string;
+  [key: string]: unknown;
+}
+
+const { style, class: className = '', ...rest } = Astro.props;
+
+const spanStyle = styleToString({ display: 'none', ...style });
+
+const toggleCss = `
+meta ~ .cino {
+  display: none !important;
+  opacity: 0 !important;
+}
+meta ~ .cio {
+  display: block !important;
+}`;
+---
+
+<Fragment>
+  {/* Injected style for Orange.fr targeting */}
+  <style set:html={toggleCss} />
+
+  {/* Rendered on all clients except Orange.fr */}
+  <code class={`${className} cino`.trim()} {...rest}>
+    <slot />
+  </code>
+
+  {/* Rendered only on Orange.fr */}
+  <span class={`${className} cio`.trim()} style={spanStyle} {...rest}>
+    <slot />
+  </span>
+</Fragment>

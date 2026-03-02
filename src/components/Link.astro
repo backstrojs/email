@@ -1,0 +1,37 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+
+/**
+ * Link – an anchor tag styled for email with safe defaults.
+ *
+ * Opens links in a new tab by default (`target="_blank"`) and applies a
+ * standard blue colour with no underline—override via the `style` prop.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Link } from '@backstro/email';
+ * ---
+ * <Link href="https://example.com">Visit our website</Link>
+ * ```
+ */
+interface Props {
+  href?: string;
+  target?: string;
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { href, target = '_blank', style, ...rest } = Astro.props;
+
+const aStyle = styleToString({
+  color: '#067df7',
+  textDecorationLine: 'none',
+  ...style,
+});
+---
+
+<a href={href} target={target} style={aStyle} {...rest}>
+  <slot />
+</a>

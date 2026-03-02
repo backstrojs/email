@@ -1,0 +1,56 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+
+/**
+ * Preview – hidden preheader text shown in inbox previews.
+ *
+ * Email clients show up to ~150 characters of text after the subject line.
+ * This component renders its content as an invisible element and pads the
+ * remaining space with zero-width and non-breaking space characters so
+ * client-specific content doesn't bleed into the preview.
+ *
+ * Must be placed inside `<Body>` as the first child element.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Preview } from '@backstro/email';
+ * ---
+ * <Preview>Get 20 % off your next order →</Preview>
+ * ```
+ */
+interface Props extends astroHTML.JSX.HTMLAttributes {
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const PREVIEW_MAX_LENGTH = 150;
+
+// Read slot contents as text. In Astro we receive the raw text via a prop
+// because <slot> content isn't available in the frontmatter. Pass text as
+// the `children` string prop, or just put text inside the slot.
+const { style, ...rest } = Astro.props;
+
+const containerStyle = styleToString({
+  display: 'none',
+  overflow: 'hidden',
+  lineHeight: '1px',
+  opacity: 0,
+  maxHeight: 0,
+  maxWidth: 0,
+  ...style,
+});
+
+// Build white-space padding template once
+const whiteSpaceCodes = '\xa0\u200C\u200B\u200D\u200E\u200F\uFEFF';
+---
+
+<!--
+  USAGE NOTE: Put plain text content (max 150 chars) inside this component.
+  White-space padding is rendered automatically below.
+-->
+<div style={containerStyle} data-skip-in-text="true" {...rest}>
+  <slot />
+  <div>{whiteSpaceCodes.repeat(PREVIEW_MAX_LENGTH)}</div>
+</div>

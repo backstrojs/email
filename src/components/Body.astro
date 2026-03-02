@@ -1,0 +1,69 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+
+/**
+ * Body – wraps content in a `<body>` element with a compatibility table.
+ *
+ * Yahoo Mail and AOL strip `<body>` styles when converting to `<div>`, so
+ * this component mirrors the react-email approach: reset margin/padding on
+ * the outer `<body>` and re-apply `background` / `backgroundColor`, then
+ * forward ALL styles onto an inner `<td>`.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Body } from '@backstro/email';
+ * ---
+ * <Body style={{ backgroundColor: '#ffffff' }}>
+ *   <slot />
+ * </Body>
+ * ```
+ */
+interface Props {
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { style, ...rest } = Astro.props;
+
+const marginProperties = [
+  'margin', 'marginTop', 'marginBottom', 'marginRight', 'marginLeft',
+  'marginInline', 'marginBlock', 'marginBlockStart', 'marginBlockEnd',
+  'marginInlineStart', 'marginInlineEnd',
+] as const;
+
+// Build outer body style: only background + zero out any margin the user set
+const bodyStyle: StyleObject = {};
+if (style) {
+  if (style.background !== undefined) bodyStyle.background = style.background;
+  if (style.backgroundColor !== undefined) bodyStyle.backgroundColor = style.backgroundColor;
+  for (const prop of marginProperties) {
+    if (style[prop] !== undefined) {
+      bodyStyle[prop] = 0;
+    }
+  }
+}
+
+const bodyStyleStr = styleToString(bodyStyle);
+const innerStyleStr = style ? styleToString(style) : '';
+---
+
+<body {...rest} style={bodyStyleStr}>
+  <table
+    border={0}
+    width="100%"
+    cellpadding="0"
+    cellspacing="0"
+    role="presentation"
+    align="center"
+  >
+    <tbody>
+      <tr>
+        <td style={innerStyleStr}>
+          <slot />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</body>

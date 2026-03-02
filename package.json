@@ -1,0 +1,64 @@
+{
+	"name": "@backstro/email",
+	"version": "0.0.1",
+	"description": "Astro components for building email templates",
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./src/index.ts"
+		},
+		"./render": {
+			"import": "./src/render.ts"
+		},
+		"./tailwind": {
+			"import": "./src/tailwind.ts"
+		}
+	},
+	"files": [
+		"src/**"
+	],
+	"license": "MIT",
+	"scripts": {
+		"build": "tsc --noEmit",
+		"clean": "rm -rf dist",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/resend/react-email.git",
+		"directory": "astro"
+	},
+	"keywords": [
+		"astro",
+		"email",
+		"react-email"
+	],
+	"engines": {
+		"node": ">=20.0.0"
+	},
+	"peerDependencies": {
+		"astro": ">=4.0.0",
+		"tailwindcss": ">=4.0.0"
+	},
+	"peerDependenciesMeta": {
+		"tailwindcss": {
+			"optional": true
+		}
+	},
+	"dependencies": {
+		"css-tree": "^3.0.0",
+		"marked": "^12.0.0",
+		"node-html-parser": "^6.0.0",
+		"prismjs": "^1.29.0"
+	},
+	"devDependencies": {
+		"@types/css-tree": "^2.3.11",
+		"@types/prismjs": "^1.26.4",
+		"astro": "^5.0.0",
+		"tailwindcss": "^4.0.0",
+		"typescript": "5.8.3",
+		"vitest": "^3.0.0"
+	}
+}

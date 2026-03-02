@@ -1,0 +1,42 @@
+---
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+
+/**
+ * Text – a `<p>` element with email-safe defaults.
+ *
+ * Ships with `fontSize: 14px`, `lineHeight: 24px`, and `margin: 16px 0`
+ * so it renders consistently across clients. All values are overridable
+ * via the `style` prop.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Text } from '@backstro/email';
+ * ---
+ * <Text style={{ color: '#333' }}>Hello world</Text>
+ * ```
+ */
+interface Props {
+  style?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { style, ...rest } = Astro.props;
+
+// Apply default margins only when the user hasn't set them
+const marginTop = style?.marginTop !== undefined ? style.marginTop : '16px';
+const marginBottom = style?.marginBottom !== undefined ? style.marginBottom : '16px';
+
+const pStyle = styleToString({
+  fontSize: '14px',
+  lineHeight: '24px',
+  ...style,
+  marginTop,
+  marginBottom,
+});
+---
+
+<p style={pStyle} {...rest}>
+  <slot />
+</p>

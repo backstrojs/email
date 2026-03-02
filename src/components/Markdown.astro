@@ -1,0 +1,158 @@
+---
+import { marked, Renderer } from 'marked';
+import type { StyleObject } from '../utils/style.js';
+import { styleToString } from '../utils/style.js';
+import { parseCssInJsToInlineCss } from '../utils/parse-css-in-js-to-inline-css.js';
+import { defaultMarkdownStyles, type MarkdownStylesType } from '../utils/markdown-styles.js';
+
+/**
+ * Markdown – renders a Markdown string to email-safe HTML.
+ *
+ * All formatting is applied as inline styles so the output works in email
+ * clients that strip `<style>` sheets and class-based CSS. Accepts custom
+ * style overrides for every Markdown element via `markdownCustomStyles`.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Markdown } from '@backstro/email';
+ * const content = `# Hello\n\nThis is a **bold** statement.`;
+ * ---
+ * <Markdown>{content}</Markdown>
+ * ```
+ */
+interface Props {
+  /** The Markdown source string. */
+  children: string;
+  /** Override default styles for individual Markdown elements. */
+  markdownCustomStyles?: MarkdownStylesType;
+  /** Styles applied to the outer container `<div>`. */
+  markdownContainerStyles?: StyleObject;
+  [key: string]: unknown;
+}
+
+const { children, markdownContainerStyles, markdownCustomStyles, ...rest } = Astro.props;
+
+const finalStyles: MarkdownStylesType = { ...defaultMarkdownStyles, ...markdownCustomStyles };
+
+function styleAttr(styles: StyleObject | undefined): string {
+  if (!styles) return '';
+  const css = parseCssInJsToInlineCss(styles);
+  return css ? ` style="${css}"` : '';
+}
+
+const renderer = new Renderer();
+
+renderer.blockquote = ({ tokens }) => {
+  const text = renderer.parser.parse(tokens);
+  return `<blockquote${styleAttr(finalStyles.blockQuote)}>\n${text}</blockquote>\n`;
+};
+
+renderer.br = () => `<br${styleAttr(finalStyles.br)} />`;
+
+renderer.code = ({ text }) => {
+  const escaped = `${text.replace(/\n$/, '')}\n`;
+  return `<pre${styleAttr(finalStyles.codeBlock)}><code>${escaped}</code></pre>\n`;
+};
+
+renderer.codespan = ({ text }) =>
+  `<code${styleAttr(finalStyles.codeInline)}>${text}</code>`;
+
+renderer.del = ({ tokens }) => {
+  const text = renderer.parser.parseInline(tokens);
+  return `<del${styleAttr(finalStyles.strikethrough)}>${text}</del>`;
+};
+
+renderer.em = ({ tokens }) => {
+  const text = renderer.parser.parseInline(tokens);
+  return `<em${styleAttr(finalStyles.italic)}>${text}</em>`;
+};
+
+renderer.heading = ({ tokens, depth }) => {
+  const text = renderer.parser.parseInline(tokens);
+  const key = `h${depth}` as keyof MarkdownStylesType;
+  return `<h${depth}${styleAttr(finalStyles[key])}>${text}</h${depth}>\n`;
+};
+
+renderer.hr = () => `<hr${styleAttr(finalStyles.hr)} />\n`;
+
+renderer.image = ({ href, text, title }) => {
+  const safeHref = href.replaceAll('"', '&quot;');
+  const safeAlt = text.replaceAll('"', '&quot;');
+  const titleAttr = title ? ` title="${title}"` : '';
+  return `<img src="${safeHref}" alt="${safeAlt}"${titleAttr}${styleAttr(finalStyles.image)}>`;
+};
+
+renderer.link = ({ href, title, tokens }) => {
+  const text = renderer.parser.parseInline(tokens);
+  const titleAttr = title ? ` title="${title}"` : '';
+  return `<a href="${href}" target="_blank"${titleAttr}${styleAttr(finalStyles.link)}>${text}</a>`;
+};
+
+renderer.listitem = ({ tokens }) => {
+  const hasNestedList = tokens.some((t) => t.type === 'list');
+  const text = hasNestedList
+    ? renderer.parser.parse(tokens)
+    : renderer.parser.parseInline(tokens);
+  return `<li${styleAttr(finalStyles.li)}>${text}</li>\n`;
+};
+
+renderer.list = ({ items, ordered, start }) => {
+  const tag = ordered ? 'ol' : 'ul';
+  const startAttr = ordered && start !== 1 ? ` start="${start}"` : '';
+  const styles = styleAttr(finalStyles[ordered ? 'ol' : 'ul']);
+  return `<${tag}${startAttr}${styles}>\n${items.map((item) => renderer.listitem(item)).join('')}</${tag}>\n`;
+};
+
+renderer.paragraph = ({ tokens }) => {
+  const text = renderer.parser.parseInline(tokens);
+  return `<p${styleAttr(finalStyles.p)}>${text}</p>\n`;
+};
+
+renderer.strong = ({ tokens }) => {
+  const text = renderer.parser.parseInline(tokens);
+  return `<strong${styleAttr(finalStyles.bold)}>${text}</strong>`;
+};
+
+renderer.table = ({ header, rows }) => {
+  const theadRow = renderer.tablerow({
+    text: header.map((cell) => renderer.tablecell(cell)).join(''),
+  });
+  const tbodyRows = rows
+    .map((row) =>
+      renderer.tablerow({ text: row.map((cell) => renderer.tablecell(cell)).join('') }),
+    )
+    .join('');
+
+  return [
+    `<table${styleAttr(finalStyles.table)}>`,
+    `<thead${styleAttr(finalStyles.thead)}>\n${theadRow}</thead>`,
+    `<tbody${styleAttr(finalStyles.tbody)}>${tbodyRows}</tbody>`,
+    `</table>\n`,
+  ].join('\n');
+};
+
+renderer.tablecell = ({ tokens, align, header }) => {
+  const text = renderer.parser.parseInline(tokens);
+  const tag = header ? 'th' : 'td';
+  const alignAttr = align ? ` align="${align}"` : '';
+  const cellStyle = styleAttr(header ? finalStyles.th : finalStyles.td);
+  return `<${tag}${alignAttr}${cellStyle}>${text}</${tag}>\n`;
+};
+
+renderer.tablerow = ({ text }) =>
+  `<tr${styleAttr(finalStyles.tr)}>\n${text}</tr>\n`;
+
+const htmlOutput = marked.parse(children, { renderer, async: false }) as string;
+
+const containerStyle = markdownContainerStyles
+  ? styleToString(markdownContainerStyles)
+  : undefined;
+---
+
+<div
+  data-id="react-email-markdown"
+  style={containerStyle}
+  {...rest}
+  set:html={htmlOutput}
+/>

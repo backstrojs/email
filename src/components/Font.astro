@@ -1,0 +1,97 @@
+---
+/**
+ * Font – declares a web font via `@font-face` for email clients that
+ * support it.
+ *
+ * Must be placed inside your `<Head>` component. Not all email clients
+ * support web fonts; always supply a `fallbackFontFamily` array so a
+ * safe system font is used everywhere else.
+ *
+ * Check https://www.caniemail.com/features/css-at-font-face/ for client
+ * support information.
+ *
+ * @example
+ * ```astro
+ * ---
+ * import { Font } from '@backstro/email';
+ * ---
+ * <Font
+ *   fontFamily="Raleway"
+ *   fallbackFontFamily={['Arial', 'sans-serif']}
+ *   webFont={{ url: 'https://fonts.gstatic.com/...', format: 'woff2' }}
+ *   fontWeight={400}
+ *   fontStyle="normal"
+ * />
+ * ```
+ */
+
+type FallbackFont =
+  | 'Arial'
+  | 'Helvetica'
+  | 'Verdana'
+  | 'Georgia'
+  | 'Times New Roman'
+  | 'serif'
+  | 'sans-serif'
+  | 'monospace'
+  | 'cursive'
+  | 'fantasy';
+
+type FontFormat =
+  | 'woff'
+  | 'woff2'
+  | 'truetype'
+  | 'opentype'
+  | 'embedded-opentype'
+  | 'svg';
+
+interface Props {
+  /** The custom font family name. */
+  fontFamily: string;
+  /** Safe fallback font family/families. An array is ordered by priority. */
+  fallbackFontFamily: FallbackFont | FallbackFont[];
+  /** Optional remote web font URL + format. */
+  webFont?: {
+    url: string;
+    format: FontFormat;
+  };
+  /** @default 'normal' */
+  fontStyle?: string;
+  /** @default 400 */
+  fontWeight?: number | string;
+}
+
+const {
+  fontFamily,
+  fallbackFontFamily,
+  webFont,
+  fontStyle = 'normal',
+  fontWeight = 400,
+} = Astro.props;
+
+const src = webFont
+  ? `src: url(${webFont.url}) format('${webFont.format}');`
+  : '';
+
+const msoFallback = Array.isArray(fallbackFontFamily)
+  ? fallbackFontFamily[0]
+  : fallbackFontFamily;
+
+const fontFamilyList = Array.isArray(fallbackFontFamily)
+  ? fallbackFontFamily.join(', ')
+  : fallbackFontFamily;
+
+const css = `@font-face {
+  font-family: '${fontFamily}';
+  font-style: ${fontStyle};
+  font-weight: ${fontWeight};
+  mso-font-alt: '${msoFallback}';
+  ${src}
+}
+
+* {
+  font-family: '${fontFamily}', ${fontFamilyList};
+}`;
+---
+
+<style set:html={css} />
