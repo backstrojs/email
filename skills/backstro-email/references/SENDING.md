@@ -36,7 +36,7 @@ const html = await render(WelcomeEmail, props, {
 
 ---
 
-## Resend (Recommended)
+## Resend
 
 Install the Resend SDK:
 
@@ -44,27 +44,6 @@ Install the Resend SDK:
 npm install resend
 pnpm add resend
 ```
-
-### With the Resend MCP Tool
-
-When you have access to the Resend MCP tool:
-
-```ts
-import { render, renderText } from "@backstro/email/render";
-import WelcomeEmail from "./emails/WelcomeEmail.astro";
-
-const props = { name: "Alice", verificationUrl: "https://example.com/verify" };
-const html = await render(WelcomeEmail, props);
-const text = await renderText(WelcomeEmail, props);
-
-// Use Resend MCP send-email tool with:
-// - to: recipient@example.com
-// - subject: Welcome to Acme
-// - html: html
-// - text: text
-```
-
-### Without MCP (Resend SDK)
 
 ```ts
 import { render, renderText } from "@backstro/email/render";

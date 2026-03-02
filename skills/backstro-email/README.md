@@ -22,7 +22,7 @@ Agent Skills are a standardized format for giving AI agents specialized knowledg
 
 - Build HTML email templates using Astro components
 - Use conditionals and loops natively in `.astro` templates
-- Send emails through Resend and other providers
+- Send emails through any provider
 - Inline Tailwind CSS for email clients
 - Deploy rendering to Cloudflare Workers with `nodejs_compat`
 - Follow email development best practices for cross-client compatibility
@@ -61,4 +61,4 @@ Agents load only what they need for each task.
 
 - [Astro Documentation](https://docs.astro.build)
 - [Email Client CSS Support](https://www.caniemail.com)
-- [Resend Documentation](https://resend.com/docs/llms.txt)
+

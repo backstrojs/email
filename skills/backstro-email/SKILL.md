@@ -4,7 +4,7 @@ name: backstro-email
 description: Use when creating HTML email templates with Astro components - welcome emails, password resets, notifications, order confirmations, newsletters, or transactional emails using the @backstro/email library.
 license: MIT
 metadata:
-  author: Resend
+  author: Backstro
   version: "1.0.0"
 ---
 
