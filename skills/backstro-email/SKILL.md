@@ -1,4 +1,3 @@
-```skill
 ---
 name: backstro-email
 description: Use when creating HTML email templates with Astro components - welcome emails, password resets, notifications, order confirmations, newsletters, or transactional emails using the @backstro/email library.
@@ -338,4 +337,3 @@ See [references/PATTERNS.md](references/PATTERNS.md) for complete examples inclu
 - Common Patterns: [references/PATTERNS.md](references/PATTERNS.md)
 - Sending Guide: [references/SENDING.md](references/SENDING.md)
 - Internationalization: [references/I18N.md](references/I18N.md)
-```
